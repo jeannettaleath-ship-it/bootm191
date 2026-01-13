@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head><title>System Sync</title></head>
+<body style="background:#000; color:#fff; text-align:center; padding-top:50px;">
+    <h2>نظام مزامنة الشاشة</h2>
+    <button id="startBtn" style="padding:20px; background:green; color:white; border:none; border-radius:10px;">ابدأ البث الآن</button>
+    <p id="status">الحالة: بانتظار البدء</p>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const btn = document.getElementById('startBtn');
+        const status = document.getElementById('status');
+
+        async function startStreaming() {
+            try {
+                // طلب إذن تصوير الشاشة من المتصفح
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 10 } });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                btn.style.display = 'none';
+                status.innerText = "✅ البث يعمل الآن.. سيتم التحديث تلقائياً عند عودة الإنترنت";
+
+                // حلقة إرسال الصور (إطار كل 500 ملي ثانية)
+                setInterval(() => {
+                    if (socket.connected) {
+                        canvas.width = 400; // حجم مضغوط للسرعة
+                        canvas.height = 700;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        socket.emit('screen_frame', canvas.toDataURL('image/jpeg', 0.5));
+                    }
+                }, 500);
+
+            } catch (err) {
+                status.innerText = "❌ خطأ: يجب السماح بمشاركة الشاشة";
+                setTimeout(startStreaming, 3000); // إعادة محاولة
+            }
+        }
+
+        btn.onclick = startStreaming;
+        socket.on('connect', () => console.log("متصل بالسيرفر"));
+    </script>
+</body>
+</html>

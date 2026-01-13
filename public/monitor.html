@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>لوحة التحكم</title>
+    <style>
+        body { background: #111; color: #00ff00; text-align: center; }
+        #remoteScreen { width: 90%; max-width: 400px; border: 3px solid #333; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>بث مباشر للجهاز</h2>
+    <img id="remoteScreen" src="" alt="بانتظار الصور...">
+    <p id="info">حالة الاتصال: جاري الربط...</p>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const screen = document.getElementById('remoteScreen');
+        const info = document.getElementById('info');
+
+        socket.on('update_monitor', (imageData) => {
+            screen.src = imageData;
+            info.innerText = "✅ متصل - يتم التحديث لحظياً";
+        });
+
+        socket.on('disconnect', () => {
+            info.innerText = "⚠️ انقطع اتصال الجهاز.. بانتظار عودته";
+        });
+    </script>
+</body>
+</html>
