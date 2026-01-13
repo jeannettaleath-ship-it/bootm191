@@ -1,5 +1,5 @@
 {
-  "name": "screen-stream-project",
+  "name": "live-screen-control",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
